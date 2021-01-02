@@ -19,7 +19,6 @@ class CustomerAdd extends React.Component {
         e.preventDefault();
         this.addCustomer()
             .then((response) => {
-                alert('post test');
                 this.props.stateRefresh();
             })
         this.setState({
