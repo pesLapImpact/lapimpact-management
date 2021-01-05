@@ -16,7 +16,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
-import { fade, makeStyles } from '@material-ui/core/styles';
+import { fade } from '@material-ui/core/styles';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 
@@ -112,14 +112,16 @@ class App extends React.Component {
     super(props);
     this.state = {
       customers: '',
-      completed: 0
+      completed: 0,
+      searchKeyword: '',
     }
   }
 
   stateRefresh = () => {
     this.setState({
       customers: '',
-      completed: 0
+      completed: 0,
+      searchKeyword: '',
     });
     this.callApi()
       .then(res => this.setState({customers: res}))
@@ -145,7 +147,24 @@ class App extends React.Component {
   }
 
 
+  handleValueChange = (e) => {
+    let nextState = {};
+    nextState[e.target.name] = e.target.value;
+    this.setState(nextState);
+  }
+
+
   render() {
+
+    const filterdComponents = (data) => {
+      data = data.filter((c) => {
+        return c.name.indexOf(this.state.searchKeyword) > -1;
+      })
+      return data.map((c) => {
+        return <Customer stateRefresh={this.stateRefresh} key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job} />
+      })
+    }
+
     const { classes } = this.props;
     const cellList = ["No", "Profile Image", "Name", "Birthday", "Gender", "Job", "Setting"]
 
@@ -174,7 +193,9 @@ class App extends React.Component {
                 root: classes.inputRoot,
                 input: classes.inputInput,
               }}
-              inputProps={{ 'aria-label': 'search' }}
+              name="searchKeyword"
+              value={this.state.searchKeyword}
+              onChange={this.handleValueChange}
             />
           </div>
         </Toolbar>
@@ -194,21 +215,7 @@ class App extends React.Component {
           <TableBody>
             {
               this.state.customers ?
-              this.state.customers.map(c => {
-                return (
-                  <Customer 
-                    stateRefresh={this.stateRefresh}
-                    key={c.id}  
-                    id={c.id}
-                    image={c.image}
-                    name={c.name}
-                    birthday={c.birthday}
-                    gender={c.gender}
-                    job={c.job}
-                  />
-                )
-              })
-              : 
+                filterdComponents(this.state.customers) : 
               <TableRow>
                 <TableCell colSpan="6" align="center">
                   <CircularProgress className={classes.progress} variant="determinate" value={this.state.completed} />
